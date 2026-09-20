@@ -30,57 +30,53 @@ export default function Home() {
     const lerp = (start: number, end: number, factor: number) =>
       start + (end - start) * factor;
 
+    const handlePointer = (e: MouseEvent | PointerEvent) => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      const inHero =
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom &&
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right;
+
+      if (inHero) {
+        targetPos.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        };
+        setIsHovered(true);
+      } else {
+        setIsHovered(false);
+        targetPos.current = { x: -1000, y: -1000 };
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointer, { passive: true });
+    window.addEventListener("mousemove", handlePointer, { passive: true });
+
     const animateMask = () => {
-      const dx = targetPos.current.x - currentPos.current.x;
-      const dy = targetPos.current.y - currentPos.current.y;
+      // Easing / lerp for smooth fluid cursor following
+      currentPos.current.x = lerp(currentPos.current.x, targetPos.current.x, 0.16);
+      currentPos.current.y = lerp(currentPos.current.y, targetPos.current.y, 0.16);
 
-      // Only perform DOM style mutations when there is noticeable movement
-      if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-        currentPos.current.x = lerp(currentPos.current.x, targetPos.current.x, 0.18);
-        currentPos.current.y = lerp(currentPos.current.y, targetPos.current.y, 0.18);
-
-        if (revealLayerRef.current) {
-          const x = Math.round(currentPos.current.x * 10) / 10;
-          const y = Math.round(currentPos.current.y * 10) / 10;
-          const maskGradient = `radial-gradient(circle 260px at ${x}px ${y}px, black 0%, black 130px, rgba(0, 0, 0, 0.6) 200px, transparent 260px)`;
-          revealLayerRef.current.style.maskImage = maskGradient;
-          revealLayerRef.current.style.webkitMaskImage = maskGradient;
-        }
+      if (revealLayerRef.current) {
+        // 260px radius soft feathered circular spotlight
+        const maskGradient = `radial-gradient(circle 260px at ${currentPos.current.x}px ${currentPos.current.y}px, black 0%, black 130px, rgba(0, 0, 0, 0.6) 200px, transparent 260px)`;
+        revealLayerRef.current.style.maskImage = maskGradient;
+        revealLayerRef.current.style.webkitMaskImage = maskGradient;
       }
 
       animId = requestAnimationFrame(animateMask);
     };
 
     animId = requestAnimationFrame(animateMask);
-    return () => cancelAnimationFrame(animId);
-  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    targetPos.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+    return () => {
+      window.removeEventListener("pointermove", handlePointer);
+      window.removeEventListener("mousemove", handlePointer);
+      cancelAnimationFrame(animId);
     };
-
-    if (!isHovered) setIsHovered(true);
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    targetPos.current = { x, y };
-    currentPos.current = { x, y };
-
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    targetPos.current = { x: -1000, y: -1000 };
-  };
+  }, []);
 
   const greekGods: GreekGod[] = [
     {
@@ -215,10 +211,8 @@ export default function Home() {
         EXISTING HERO SECTION (Preserved completely)
       */}
       <section
+        id="hero-top"
         ref={heroRef}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className="h-screen w-full bg-[#000000] text-white relative overflow-hidden flex flex-col justify-between px-6 sm:px-10 md:px-14 lg:px-16 pt-6 sm:pt-7 pb-6 sm:pb-8 lg:pb-10 cursor-default"
       >
         {/* 
@@ -262,26 +256,24 @@ export default function Home() {
       </div>
 
       {/* 
-      {/* 
         3D Emberwing Phoenix Model
         - Positioned dead-center of hero section
         - Head looks directly forward at the viewer ("look at me") and tracks cursor
-        - Z-index 50 so UI controls and labels with z-[60] remain crisp and unobstructed
+        - Z-index 20 so it flies in front of giant background PHOENIX letters (z-10)
       */}
       <div
-        className="absolute inset-0 z-[50] pointer-events-none flex items-center justify-center overflow-hidden"
-        style={{ zIndex: 50 }}
+        className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center overflow-hidden"
       >
         <Phoenix3D />
       </div>
 
       {/* 
-        LAYER 2: All UI Elements (relative z-[60])
+        LAYER 2: All UI Elements (relative z-30)
         Guaranteed to sit above the 3D model and background layers
       */}
 
       {/* Top Minimal Navigation */}
-      <header className="w-full flex items-center justify-between relative z-[60] shrink-0">
+      <header className="w-full flex items-center justify-between relative z-30 shrink-0">
         <Link
           href="/"
           className="group flex items-center gap-3.5 px-4 py-2 rounded-full bg-black/75 hover:bg-zinc-900 border border-white/20 hover:border-amber-400/50 backdrop-blur-md transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.85)]"
@@ -312,21 +304,21 @@ export default function Home() {
       {/* 
         Background Letters: PHOENIX + Tagline + Scroll to rise
         - Eyebrow pill: RISE, BUILD, CREATE sits neatly above PHOENIX in open sky
-        - Big PHOENIX Letters framed with drop shadow
-        - Scroll to rise pill framed gracefully above Phoenix head
+        - Big PHOENIX Letters (z-10, behind Phoenix model)
+        - Scroll to rise pill (z-30, in front and clickable)
       */}
-      <main className="w-full flex-1 flex flex-col items-center justify-start text-center relative z-[60] pt-1 sm:pt-2 md:pt-4 select-none">
+      <main className="w-full flex-1 flex flex-col items-center justify-start text-center relative pt-1 sm:pt-2 md:pt-4 select-none">
         <div className="w-full max-w-7xl mx-auto flex flex-col items-center px-4">
           {/* Tagline Eyebrow Pill: rise,build,create */}
-          <div className="mb-2 sm:mb-3 inline-flex items-center gap-2.5 px-5 py-1.5 rounded-full bg-black/80 border border-white/20 backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.9)]">
+          <div className="mb-2 sm:mb-3 relative z-30 inline-flex items-center gap-2.5 px-5 py-1.5 rounded-full bg-black/80 border border-white/20 backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.9)]">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#f59e0b]" />
             <p className="text-xs sm:text-sm md:text-base font-bold tracking-[0.32em] sm:tracking-[0.36em] uppercase text-zinc-100">
               Rise, Build, Create
             </p>
           </div>
 
-          {/* Big PHOENIX Letters: Neatly framed and centered */}
-          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] xl:text-[10.5rem] 2xl:text-[12rem] font-black tracking-[-0.035em] text-white leading-none select-none drop-shadow-[0_4px_35px_rgba(0,0,0,0.95)]">
+          {/* Big PHOENIX Letters: Positioned behind 3D Phoenix (z-10) */}
+          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] xl:text-[10.5rem] 2xl:text-[12rem] font-black tracking-[-0.035em] text-white leading-none select-none drop-shadow-[0_4px_35px_rgba(0,0,0,0.95)] relative z-10">
             PHOENIX
           </h1>
 
@@ -335,7 +327,7 @@ export default function Home() {
             onClick={() => {
               document.getElementById("phoenix-story-section")?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="mt-2.5 sm:mt-3 flex flex-col items-center gap-1.5 text-xs tracking-[0.25em] uppercase text-zinc-200 select-none cursor-pointer group hover:text-white transition-colors"
+            className="mt-2.5 sm:mt-3 relative z-30 flex flex-col items-center gap-1.5 text-xs tracking-[0.25em] uppercase text-zinc-200 select-none cursor-pointer group hover:text-white transition-colors"
             aria-label="Scroll to explore Phoenix story section"
           >
             <div className="px-4 py-1.5 rounded-full bg-black/80 border border-white/20 backdrop-blur-md flex items-center gap-2.5 shadow-lg group-hover:border-amber-400/60 transition-colors">
@@ -349,7 +341,7 @@ export default function Home() {
       </main>
 
       {/* Bottom Area: Greek Gods */}
-      <footer className="w-full flex flex-col items-center gap-2.5 sm:gap-3 relative z-[60] shrink-0">
+      <footer className="w-full flex flex-col items-center gap-2.5 sm:gap-3 relative z-30 shrink-0">
         <div className="px-4 py-1 rounded-full bg-black/80 border border-white/20 backdrop-blur-md shadow-md">
           <p className="text-xs text-zinc-100 font-bold tracking-[0.28em] uppercase text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             Greek Gods of Olympus
@@ -392,7 +384,7 @@ export default function Home() {
 
       {/* Interactive God Detail Modal */}
       {selectedGod && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[99999] animate-in fade-in duration-200">
           <div className="bg-[#09090b]/95 border border-zinc-700 max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative">
             <button
               onClick={() => setSelectedGod(null)}
