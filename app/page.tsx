@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Phoenix3D from "./components/Phoenix3D";
+import DepthText from "./components/DepthText";
 import CinematicStorySection from "./components/CinematicStorySection";
 import PhoenixDiscoverySection from "./components/PhoenixDiscoverySection";
 
@@ -317,9 +318,24 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Big PHOENIX Letters: Positioned behind 3D Phoenix (z-10) */}
-          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] xl:text-[10.5rem] 2xl:text-[12rem] font-black tracking-[-0.035em] text-white leading-none select-none drop-shadow-[0_4px_35px_rgba(0,0,0,0.95)] relative z-10">
-            PHOENIX
+          {/* 3D Extruded PHOENIX Title (React Bits DepthText synced with Phoenix fire theme) */}
+          <h1 className="relative z-10 select-none leading-none flex items-center justify-center my-1 sm:my-2">
+            <DepthText
+              text="PHOENIX"
+              layers={34}
+              depth={2.4}
+              faceColor="#f8fafc"
+              depthColor="#F97316"
+              tilt={7.5}
+              pointerTracking
+              smoothing={0.14}
+              perspective={900}
+              autoOrbit
+              orbitSpeed={0.35}
+              fontSize="clamp(3.5rem, 12.5vw, 10.5rem)"
+              fontWeight={900}
+              shadow
+            />
           </h1>
 
           {/* Below that: Scroll to rise */}
