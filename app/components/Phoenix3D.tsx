@@ -13,7 +13,7 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
   const mouseRef = useRef({ x: 0, y: 0 });
   const [loaded, setLoaded] = useState(false);
 
-  // Keep mouseRef updated if prop provided
+  // Keep mouseRef updated from normalized prop
   useEffect(() => {
     if (mouseNormalized) {
       mouseRef.current = mouseNormalized;
@@ -25,10 +25,8 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
     if (!container) return;
 
     let animationFrameId: number;
-    let isVisible = true;
-    let isRunning = true;
 
-    // Window-level mouse tracking for 100% reliable tracking everywhere on screen
+    // Window-level mouse tracking as additional fallback
     const handleGlobalPointerMove = (e: PointerEvent | MouseEvent) => {
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -((e.clientY / window.innerHeight) * 2 - 1);
@@ -52,7 +50,7 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -116,6 +114,8 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
         model.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
             if (mesh.material) {
               const mat = mesh.material as THREE.MeshStandardMaterial;
               mat.roughness = 0.5;
@@ -154,30 +154,33 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
                       0.0, s, c
                     );
                   }
-
-                  ${shader.vertexShader}
-                `;
+                ` + shader.vertexShader;
 
                 shader.vertexShader = shader.vertexShader.replace(
                   "#include <begin_vertex>",
                   `
                   #include <begin_vertex>
 
-                  // Local head center calibration in model space
-                  float headDist = length(vec3(position.x, position.y - uNeckY, position.z - uNeckZ));
-                  float headWeight = smoothstep(0.48, 0.0, headDist);
+                  // Head weight calculation based on centered geometry
+                  // Head vertices: |x| < 0.32, y > 0.15
+                  float headYWeight = smoothstep(0.12, 0.38, transformed.y);
+                  float headXWeight = smoothstep(0.35, 0.14, abs(transformed.x));
+                  float headWeight = headYWeight * headXWeight;
 
                   if (headWeight > 0.001) {
-                    vec3 headPivot = vec3(0.0, uNeckY, uNeckZ);
-                    vec3 localPos = transformed - headPivot;
+                    vec3 pivotNeck = vec3(0.0, uNeckY, uNeckZ);
+                    vec3 relPos = transformed - pivotNeck;
 
-                    float yawAngle = uHeadYaw * headWeight;
-                    float pitchAngle = uHeadPitch * headWeight;
+                    // Rotate head smoothly around neck pivot
+                    mat3 rotY = makeRotY(uHeadYaw * headWeight);
+                    mat3 rotX = makeRotX(uHeadPitch * headWeight);
 
-                    mat3 rotY = makeRotY(yawAngle);
-                    mat3 rotX = makeRotX(pitchAngle);
+                    relPos = rotX * (rotY * relPos);
+                    transformed = relPos + pivotNeck;
 
-                    transformed = headPivot + (rotY * rotX * localPos);
+                    #ifdef USE_NORMAL
+                    vNormal = rotX * (rotY * vNormal);
+                    #endif
                   }
                   `
                 );
@@ -190,8 +193,8 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
         setLoaded(true);
       },
       undefined,
-      (error) => {
-        console.error("Error loading Phoenix GLB model:", error);
+      (err) => {
+        console.error("Error loading Phoenix 3D model:", err);
       }
     );
 
@@ -201,57 +204,43 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
 
     // Render loop with head turning and dead-center placement
     const render = () => {
-      if (!isRunning) return;
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
-      if (isVisible) {
-        const elapsedTime = (performance.now() - startTime) * 0.001;
+      // 1. Calculate Head Turn from Cursor (yaw & pitch)
+      // The extreme-left position (+0.95) aligns the head straight forward, so we use it as the base start
+      const baseYawOffset = 0.95;
+      const targetHeadYaw = baseYawOffset - mouseRef.current.x * 0.85;
+      const targetHeadPitch = -mouseRef.current.y * 0.55 + 0.16;
 
-        // 1. Calculate Head Turn from Cursor (yaw & pitch)
-        // Extreme-left (+0.95) aligns head straight forward; cursor tracks smoothly across screen
-        const baseYawOffset = 0.95;
-        const targetHeadYaw = baseYawOffset - mouseRef.current.x * 0.85;
-        const targetHeadPitch = -mouseRef.current.y * 0.55 + 0.16;
+      curHeadYaw = THREE.MathUtils.lerp(curHeadYaw, targetHeadYaw, 0.12);
+      curHeadPitch = THREE.MathUtils.lerp(curHeadPitch, targetHeadPitch, 0.12);
 
-        curHeadYaw = THREE.MathUtils.lerp(curHeadYaw, targetHeadYaw, 0.12);
-        curHeadPitch = THREE.MathUtils.lerp(curHeadPitch, targetHeadPitch, 0.12);
+      headUniforms.uHeadYaw.value = curHeadYaw;
+      headUniforms.uHeadPitch.value = curHeadPitch;
 
-        headUniforms.uHeadYaw.value = curHeadYaw;
-        headUniforms.uHeadPitch.value = curHeadPitch;
+      if (pivot) {
+        // 2. Subtle supportive body banking tilt (complementing head turn direction)
+        const targetBodyRotY = -mouseRef.current.x * 0.18;
+        const targetBodyRotX = -mouseRef.current.y * 0.14;
+        const targetBodyRotZ = mouseRef.current.x * 0.14;
 
-        if (pivot) {
-          // 2. Subtle supportive body banking tilt (complementing head turn direction)
-          const targetBodyRotY = -mouseRef.current.x * 0.18;
-          const targetBodyRotX = -mouseRef.current.y * 0.14;
-          const targetBodyRotZ = mouseRef.current.x * 0.14;
+        // Positioned a bit further down for optimal text framing and clearance
+        const basePosY = isMobile ? -0.90 : -0.82;
+        const floatOffset = Math.sin(elapsedTime * 1.8) * 0.04;
+        const targetPosY = basePosY + mouseRef.current.y * 0.08 + floatOffset;
+        const targetPosX = mouseRef.current.x * 0.1;
 
-          // Positioned a bit further down for optimal text framing and clearance
-          const basePosY = isMobile ? -0.90 : -0.82;
-          const floatOffset = Math.sin(elapsedTime * 1.8) * 0.04;
-          const targetPosY = basePosY + mouseRef.current.y * 0.08 + floatOffset;
-          const targetPosX = mouseRef.current.x * 0.1;
+        pivot.rotation.y = THREE.MathUtils.lerp(pivot.rotation.y, targetBodyRotY, 0.08);
+        pivot.rotation.x = THREE.MathUtils.lerp(pivot.rotation.x, targetBodyRotX, 0.08);
+        pivot.rotation.z = THREE.MathUtils.lerp(pivot.rotation.z, targetBodyRotZ, 0.08);
 
-          pivot.rotation.y = THREE.MathUtils.lerp(pivot.rotation.y, targetBodyRotY, 0.08);
-          pivot.rotation.x = THREE.MathUtils.lerp(pivot.rotation.x, targetBodyRotX, 0.08);
-          pivot.rotation.z = THREE.MathUtils.lerp(pivot.rotation.z, targetBodyRotZ, 0.08);
-
-          pivot.position.y = THREE.MathUtils.lerp(pivot.position.y, targetPosY, 0.08);
-          pivot.position.x = THREE.MathUtils.lerp(pivot.position.x, targetPosX, 0.08);
-        }
-
-        renderer.render(scene, camera);
+        pivot.position.y = THREE.MathUtils.lerp(pivot.position.y, targetPosY, 0.08);
+        pivot.position.x = THREE.MathUtils.lerp(pivot.position.x, targetPosX, 0.08);
       }
 
+      renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(render);
     };
-
-    // Pause heavy WebGL rendering only when hero is scrolled completely out of viewport
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-      },
-      { threshold: 0 }
-    );
-    observer.observe(container);
 
     render();
 
@@ -267,15 +256,14 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
       camera.updateProjectionMatrix();
 
       renderer.setSize(newWidth, newHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     };
 
     window.addEventListener("resize", handleResize);
 
     return () => {
-      isRunning = false;
-      observer.disconnect();
       window.removeEventListener("pointermove", handleGlobalPointerMove);
+      window.removeEventListener("mousemove", handleGlobalPointerMove);
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
       renderer.dispose();
