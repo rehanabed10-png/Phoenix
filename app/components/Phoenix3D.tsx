@@ -210,7 +210,7 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
       // The extreme-left position (+0.95) aligns the head straight forward, so we use it as the base start
       const baseYawOffset = 0.95;
       const targetHeadYaw = baseYawOffset - mouseRef.current.x * 0.85;
-      const targetHeadPitch = -mouseRef.current.y * 0.55 + 0.16;
+      const targetHeadPitch = mouseRef.current.y * 0.55 + 0.16;
 
       curHeadYaw = THREE.MathUtils.lerp(curHeadYaw, targetHeadYaw, 0.12);
       curHeadPitch = THREE.MathUtils.lerp(curHeadPitch, targetHeadPitch, 0.12);
@@ -221,7 +221,7 @@ export default function Phoenix3D({ mouseNormalized }: Phoenix3DProps) {
       if (pivot) {
         // 2. Subtle supportive body banking tilt (complementing head turn direction)
         const targetBodyRotY = -mouseRef.current.x * 0.18;
-        const targetBodyRotX = -mouseRef.current.y * 0.14;
+        const targetBodyRotX = mouseRef.current.y * 0.14;
         const targetBodyRotZ = mouseRef.current.x * 0.14;
 
         // Positioned a bit further down for optimal text framing and clearance
