@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { PHOENIX_PROJECTS } from "../data/phoenixProjects";
 
 interface EditorialInfoCardProps {
   children: React.ReactNode;
@@ -357,14 +358,15 @@ export default function CinematicStorySection() {
           - Dual-layer cursor hovering:
             1. Global parallax float following cursor across viewport
             2. Local 3D tilt, specular spotlight, and border glow when hovering directly on cards
-          - Highlighting Phoenix's Company Portfolio:
-            - Voice Shield AI
-            - Phoenix Research AI
-            - Phoenix Pulse AI
-            - Sanctuary Citadel Dossier
+          - Highlighting Phoenix's Five Canonical Projects:
+            - 01 VoiceShieldAI
+            - 02 Phoenix Pulse
+            - 03 Phoenix Research AI
+            - 04 Phoenix AutoScribe
+            - 05 Phoenix Microservices
         */}
 
-        {/* ELEMENT 1: Top-Left — VOICE SHIELD AI */}
+        {/* ELEMENT 1: Top-Left — 01 VoiceShieldAI */}
         <div className="absolute top-[8%] sm:top-[12%] left-[4%] sm:left-[8%] lg:left-[11%] max-w-[290px] sm:max-w-[340px] z-20">
           <EditorialInfoCard
             baseRotate={-2}
@@ -376,29 +378,29 @@ export default function CinematicStorySection() {
             scrollExitRotate={-6}
             easeProgress={easeProgress}
             textFade={textFade}
-            accentGlow="rgba(16, 185, 129, 0.28)"
-            accentBorder="rgba(16, 185, 129, 0.7)"
+            accentGlow={PHOENIX_PROJECTS[0].accentGlow}
+            accentBorder={PHOENIX_PROJECTS[0].accentBorder}
           >
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-500/70 mb-2.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
-              <span className="font-mono text-xs uppercase tracking-[0.22em] text-emerald-300 font-bold">
-                VOICE SHIELD AI • IMMUNIZED
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-950/90 border border-amber-500/70 mb-2.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.9)]" />
+              <span className="font-mono text-xs uppercase tracking-[0.22em] text-amber-300 font-bold">
+                {PHOENIX_PROJECTS[0].category}
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white leading-none mb-3">
-              Voice Shield AI
+              {PHOENIX_PROJECTS[0].title}
             </h3>
             <p className="text-sm sm:text-[15px] text-zinc-100 font-normal leading-relaxed mb-1">
-              Zero-latency acoustic biometric defense. Immunizing sovereign speech against deepfake duplicates and unauthorized voice cloning.
+              {PHOENIX_PROJECTS[0].description}
             </p>
             <div className="mt-3.5 text-xs font-mono text-zinc-200 uppercase tracking-wider border-t border-zinc-700/80 pt-2.5 flex items-center justify-between font-semibold">
-              <span className="text-emerald-400">Latency: 8.4ms</span>
-              <span className="text-zinc-300">PXV-01</span>
+              <span className="text-amber-400">Wav2Vec2 • ECAPA-TDNN</span>
+              <span className="text-zinc-300">FastAPI / VAD</span>
             </div>
           </EditorialInfoCard>
         </div>
 
-        {/* ELEMENT 2: Top-Right — PHOENIX RESEARCH AI */}
+        {/* ELEMENT 2: Top-Right — 02 Phoenix Pulse */}
         <div className="absolute top-[10%] sm:top-[14%] right-[4%] sm:right-[7%] lg:right-[10%] max-w-[280px] sm:max-w-[340px] z-20">
           <EditorialInfoCard
             baseRotate={2.5}
@@ -410,30 +412,30 @@ export default function CinematicStorySection() {
             scrollExitRotate={6}
             easeProgress={easeProgress}
             textFade={textFade}
-            accentGlow="rgba(245, 158, 11, 0.28)"
-            accentBorder="rgba(245, 158, 11, 0.7)"
+            accentGlow={PHOENIX_PROJECTS[1].accentGlow}
+            accentBorder={PHOENIX_PROJECTS[1].accentBorder}
             className="text-right"
           >
-            <div className="inline-flex items-center justify-end gap-2 px-2.5 py-1 rounded-full bg-amber-950/90 border border-amber-500/70 mb-2.5 shadow-sm">
-              <span className="font-mono text-xs uppercase tracking-[0.22em] text-amber-300 font-bold">
-                DEEP RECURSION // ACTIVE
+            <div className="inline-flex items-center justify-end gap-2 px-2.5 py-1 rounded-full bg-cyan-950/90 border border-cyan-500/70 mb-2.5 shadow-sm">
+              <span className="font-mono text-xs uppercase tracking-[0.22em] text-cyan-300 font-bold">
+                {PHOENIX_PROJECTS[1].category}
               </span>
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.9)]" />
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.9)]" />
             </div>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white leading-none mb-3">
-              Phoenix Research AI
+              {PHOENIX_PROJECTS[1].title}
             </h3>
             <p className="text-sm sm:text-[15px] text-zinc-100 font-normal leading-relaxed mb-1">
-              Autonomous multi-agent research synthesis. Navigating vast hypothesis spaces to unearth foundational scientific and technical breakthroughs.
+              {PHOENIX_PROJECTS[1].description}
             </p>
             <div className="mt-3.5 text-xs font-mono text-zinc-200 uppercase tracking-wider border-t border-zinc-700/80 pt-2.5 flex items-center justify-between font-semibold">
-              <span className="text-zinc-300">CORE 09</span>
-              <span className="text-amber-400">HYPOTHESIS ENGINE</span>
+              <span className="text-zinc-300">Node.js / Express</span>
+              <span className="text-cyan-400">Axios / Cheerio</span>
             </div>
           </EditorialInfoCard>
         </div>
 
-        {/* ELEMENT 3: Bottom-Left — PHOENIX PULSE AI */}
+        {/* ELEMENT 3: Bottom-Left — 03 Phoenix Research AI */}
         <div className="absolute bottom-[9%] sm:bottom-[13%] left-[4%] sm:left-[7%] lg:left-[10%] max-w-[280px] sm:max-w-[330px] z-20">
           <EditorialInfoCard
             baseRotate={1.5}
@@ -445,26 +447,26 @@ export default function CinematicStorySection() {
             scrollExitRotate={5}
             easeProgress={easeProgress}
             textFade={textFade}
-            accentGlow="rgba(6, 182, 212, 0.28)"
-            accentBorder="rgba(6, 182, 212, 0.7)"
+            accentGlow={PHOENIX_PROJECTS[2].accentGlow}
+            accentBorder={PHOENIX_PROJECTS[2].accentBorder}
           >
-            <div className="inline-block px-3 py-1 rounded-full bg-cyan-950/95 border border-cyan-500/80 text-xs font-mono tracking-wider text-cyan-300 uppercase mb-2.5 font-bold shadow-sm">
-              TELEMETRY VITALITY
+            <div className="inline-block px-3 py-1 rounded-full bg-purple-950/95 border border-purple-500/80 text-xs font-mono tracking-wider text-purple-300 uppercase mb-2.5 font-bold shadow-sm">
+              {PHOENIX_PROJECTS[2].category}
             </div>
             <h3 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white leading-tight mb-2.5">
-              Phoenix Pulse AI
+              {PHOENIX_PROJECTS[2].title}
             </h3>
             <p className="text-sm sm:text-[15px] text-zinc-100 leading-relaxed font-normal mb-1">
-              Predictive neural telemetry engine. Anticipating systemic anomaly vectors and latency degradation before execution.
+              {PHOENIX_PROJECTS[2].description}
             </p>
             <div className="mt-3.5 text-xs font-mono text-zinc-200 uppercase tracking-wider border-t border-zinc-700/80 pt-2.5 flex items-center justify-between font-semibold">
-              <span className="text-cyan-400">Jitter: 0.02%</span>
-              <span className="text-zinc-300">PULSE-SYS</span>
+              <span className="text-purple-400">Next.js / TypeScript</span>
+              <span className="text-zinc-300">Three.js / Gemini</span>
             </div>
           </EditorialInfoCard>
         </div>
 
-        {/* ELEMENT 4: Bottom-Right — SECTOR 07 CITADEL DOSSIER */}
+        {/* ELEMENT 4: Bottom-Right — 04 Phoenix AutoScribe */}
         <div className="absolute bottom-[8%] sm:bottom-[12%] right-[4%] sm:right-[8%] lg:right-[11%] max-w-[270px] sm:max-w-[320px] z-20">
           <EditorialInfoCard
             baseRotate={-1.5}
@@ -476,22 +478,56 @@ export default function CinematicStorySection() {
             scrollExitRotate={-5}
             easeProgress={easeProgress}
             textFade={textFade}
-            accentGlow="rgba(168, 85, 247, 0.28)"
-            accentBorder="rgba(168, 85, 247, 0.7)"
+            accentGlow={PHOENIX_PROJECTS[3].accentGlow}
+            accentBorder={PHOENIX_PROJECTS[3].accentBorder}
             className="text-right"
           >
-            <div className="inline-block px-3 py-1 rounded-full bg-purple-950/95 border border-purple-500/80 text-xs font-mono tracking-wider text-purple-300 uppercase mb-2.5 font-bold shadow-sm">
-              SECTOR 07 • AETHER CITADEL
+            <div className="inline-block px-3 py-1 rounded-full bg-amber-950/95 border border-amber-500/80 text-xs font-mono tracking-wider text-amber-300 uppercase mb-2.5 font-bold shadow-sm">
+              {PHOENIX_PROJECTS[3].category}
             </div>
             <h4 className="text-lg sm:text-xl font-bold tracking-tight text-white mb-2">
-              Living Hydro-Colossus
+              {PHOENIX_PROJECTS[3].title}
             </h4>
             <p className="text-sm sm:text-[15px] text-zinc-100 leading-relaxed font-normal mb-1">
-              A sanctuary where neural architectures breathe through waterfalls, governed by the golden dragon core of Phoenix synthesis.
+              {PHOENIX_PROJECTS[3].description}
             </p>
             <div className="mt-3.5 text-xs font-mono text-zinc-200 uppercase tracking-wider border-t border-zinc-700/80 pt-2.5 flex items-center justify-between font-semibold">
-              <span className="text-zinc-300">SANCTUARY</span>
-              <span className="text-purple-400">DRAGON REALM</span>
+              <span className="text-zinc-300">Arduino UNO + CNC</span>
+              <span className="text-amber-400">NEMA 17 / GRBL</span>
+            </div>
+          </EditorialInfoCard>
+        </div>
+
+        {/* ELEMENT 5: Bottom-Center — 05 Phoenix Microservices */}
+        <div className="absolute bottom-[2.5%] sm:bottom-[3.5%] left-1/2 -translate-x-1/2 max-w-[290px] sm:max-w-[340px] z-20 hidden md:block">
+          <EditorialInfoCard
+            baseRotate={0}
+            globalMouse={mousePos}
+            parallaxX={46}
+            parallaxY={30}
+            scrollExitX={0}
+            scrollExitY={150}
+            scrollExitRotate={0}
+            easeProgress={easeProgress}
+            textFade={textFade}
+            accentGlow={PHOENIX_PROJECTS[4].accentGlow}
+            accentBorder={PHOENIX_PROJECTS[4].accentBorder}
+            className="text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-500/70 mb-2 shadow-sm">
+              <span className="font-mono text-xs uppercase tracking-[0.22em] text-emerald-300 font-bold">
+                {PHOENIX_PROJECTS[4].category}
+              </span>
+            </div>
+            <h4 className="text-base sm:text-lg font-black tracking-tight text-white leading-tight mb-1.5">
+              {PHOENIX_PROJECTS[4].title}
+            </h4>
+            <p className="text-xs sm:text-[13px] text-zinc-200 leading-relaxed font-normal mb-1">
+              {PHOENIX_PROJECTS[4].description}
+            </p>
+            <div className="mt-2 text-xs font-mono text-zinc-300 uppercase tracking-wider border-t border-zinc-700/80 pt-1.5 flex items-center justify-between font-semibold">
+              <span className="text-emerald-400">NATS JetStream</span>
+              <span className="text-zinc-300">Node / MongoDB</span>
             </div>
           </EditorialInfoCard>
         </div>

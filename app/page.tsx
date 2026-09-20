@@ -384,7 +384,7 @@ export default function Home() {
         CINEMATIC SCROLL-DRIVEN STORYTELLING EXHIBITION SECTION
         - Initial 9:16 vertical portrait with generous negative space
         - Progressively expands to full-screen on scroll
-        - Asymmetric "organized chaos" editorial text (Voice Shield AI, Phoenix Research AI, Phoenix Pulse AI)
+        - Asymmetric "organized chaos" editorial text (VoiceShieldAI, Phoenix Pulse, Phoenix Research AI, Phoenix AutoScribe, Phoenix Microservices)
         - Text elements gracefully animate out with staggered fades, slides, and scale
         - Pure black background with interactive digital art exhibition immersion
       */}
@@ -392,7 +392,7 @@ export default function Home() {
 
       {/* 
         PHOENIX DISCOVERY DIGITAL ARCHIVE & MONUMENTAL FOOTER
-        - Interactive digital archive of real builds: VoiceShield AI, Phoenix AutoScribe, Distributed Microservices, Hardware Lab, Phoenix Pulse.
+        - Interactive digital archive of the 5 canonical builds: VoiceShieldAI, Phoenix Pulse, Phoenix Research AI, Phoenix AutoScribe, Phoenix Microservices.
         - Asymmetric editorial grid with deep forensic inspection modals.
         - Monumental luxury book epilogue footer.
       */}
