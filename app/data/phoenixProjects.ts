@@ -24,6 +24,10 @@ export interface PhoenixProject {
   badgeBorder: string;
   badgeText: string;
   githubUrl: string;
+  liveUrl?: string;
+  destinationUrl: string;
+  destinationType: "LIVE PLATFORM" | "GITHUB";
+  destinationLabel: string;
   rotationDeg: number;
   hoverRotationDeg: number;
   colSpanClass: string;
@@ -70,6 +74,9 @@ export const PHOENIX_PROJECTS: PhoenixProject[] = [
     minHeightClass: "min-h-[540px] sm:min-h-[580px]",
     imageHeightClass: "h-[250px] sm:h-[320px] md:h-[360px]",
     githubUrl: "https://github.com/rehanabed10-png/voiceshieldAI",
+    destinationUrl: "https://github.com/rehanabed10-png/voiceshieldAI",
+    destinationType: "GITHUB",
+    destinationLabel: "GITHUB",
     dossier: {
       overview:
         "An AI-powered system built and developed by Rehan Abed to detect and prevent voice-cloning impersonation attacks.",
@@ -126,6 +133,10 @@ export const PHOENIX_PROJECTS: PhoenixProject[] = [
     minHeightClass: "min-h-[500px] sm:min-h-[540px]",
     imageHeightClass: "h-[230px] sm:h-[280px] md:h-[310px]",
     githubUrl: "https://github.com/rehanabed10-png/phoenix-pulse",
+    liveUrl: "https://phoenix-pulse.onrender.com/",
+    destinationUrl: "https://phoenix-pulse.onrender.com/",
+    destinationType: "LIVE PLATFORM",
+    destinationLabel: "LIVE PLATFORM",
     dossier: {
       overview:
         "Website SEO & Performance Analyzer built by Rehan Abed using Node.js, Express, Axios, and Cheerio, with a modern liquid glass interface.",
@@ -184,6 +195,10 @@ export const PHOENIX_PROJECTS: PhoenixProject[] = [
     minHeightClass: "min-h-[480px] sm:min-h-[520px]",
     imageHeightClass: "h-[220px] sm:h-[260px] md:h-[290px]",
     githubUrl: "https://github.com/rehanabed10-png/phoenix-research-ai",
+    liveUrl: "https://phoenix-research-ai-rhkg.onrender.com/",
+    destinationUrl: "https://phoenix-research-ai-rhkg.onrender.com/",
+    destinationType: "LIVE PLATFORM",
+    destinationLabel: "LIVE PLATFORM",
     dossier: {
       overview:
         "A research and intelligence platform built with Next.js, TypeScript, Three.js, and Google Gemini API, executing an explicit ASK → CLARIFY → DEFINE → TEST → LEARN methodology.",
@@ -247,6 +262,9 @@ export const PHOENIX_PROJECTS: PhoenixProject[] = [
     minHeightClass: "min-h-[500px] sm:min-h-[540px]",
     imageHeightClass: "h-[240px] sm:h-[290px] md:h-[330px]",
     githubUrl: "https://github.com/rehanabed10-png/Pheonix-autoscribe-",
+    destinationUrl: "https://github.com/rehanabed10-png/Pheonix-autoscribe-",
+    destinationType: "GITHUB",
+    destinationLabel: "GITHUB",
     dossier: {
       overview:
         "A physical handwriting machine developed as part of Team Phoenix, combining CNC motion, stepper motors, servo control and custom software to transform digital text into physical handwriting.",
@@ -308,6 +326,9 @@ export const PHOENIX_PROJECTS: PhoenixProject[] = [
     minHeightClass: "min-h-[440px] sm:min-h-[480px]",
     imageHeightClass: "h-[200px] sm:h-[240px] md:h-[270px]",
     githubUrl: "https://github.com/rehanabed10-png/phoenix-microservices",
+    destinationUrl: "https://github.com/rehanabed10-png/phoenix-microservices",
+    destinationType: "GITHUB",
+    destinationLabel: "GITHUB",
     dossier: {
       overview:
         "An event-driven microservices architecture implemented and tested as an engineering internship build to achieve decoupled, reliable service communication.",

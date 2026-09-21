@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PHOENIX — Rise, Build, Create",
-  description: "Rise, Build, Create. Walk among the ancient gods.",
+  title: "PHOENIX — Build. Create. Rise. | Rehan Abed",
+  description: "Personal engineering portfolio of Rehan Abed. Building AI systems, distributed microservices, web architectures, and robotics.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -119,7 +119,7 @@ function EditorialInfoCard({
         className="pointer-events-none absolute -inset-px rounded-xl transition-opacity duration-200"
         style={{
           opacity: isHovered ? 1 : 0,
-          background: `radial-gradient(280px circle at ${spotlightPos.x}px ${spotlightPos.y}px, ${accentGlow}, transparent 70%)`,
+          background: `radial-gradient(320px circle at ${spotlightPos.x}px ${spotlightPos.y}px, ${accentGlow.replace("0.25", "0.45")}, transparent 75%)`,
         }}
       />
 
@@ -129,10 +129,112 @@ function EditorialInfoCard({
   );
 }
 
+function HousePinIcon({
+  className = "w-5 h-5",
+  color = "#F59E0B",
+}: {
+  className?: string;
+  color?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Roof Gable */}
+      <path d="M3 10.5L12 3l9 7.5" stroke={color} />
+      {/* House Citadel Walls */}
+      <path d="M5 9.5V20a1 1 0 001 1h12a1 1 0 001-1V9.5" stroke={color} />
+      {/* Arched Sanctuary Gateway */}
+      <path d="M10 21v-5a2 2 0 014 0v5" stroke={color} fill={`${color}33`} />
+      {/* Sanctum Window Beacon */}
+      <circle cx="12" cy="9.5" r="1.5" fill={color} stroke={color} />
+      {/* Turret Spire */}
+      <path d="M18 6.5V4h-2.5v2" stroke={color} />
+    </svg>
+  );
+}
+
+interface CitadelHotspot {
+  id: string;
+  projectIndex: number;
+  landmark: string;
+  subSector: string;
+  x: number; // percentage
+  y: number; // percentage
+  align: "left" | "right" | "center";
+  accentColor: string;
+  glowColor: string;
+}
+
+const CITADEL_HOTSPOTS: CitadelHotspot[] = [
+  {
+    id: "bastion",
+    projectIndex: 0,
+    landmark: "Citadel West Bastion",
+    subSector: "SECTOR 01 • DEFENSE COMMUNE",
+    x: 18,
+    y: 44,
+    align: "left",
+    accentColor: "#F59E0B",
+    glowColor: "rgba(245, 158, 11, 0.4)",
+  },
+  {
+    id: "spire",
+    projectIndex: 1,
+    landmark: "Celestial Spire / Acropolis",
+    subSector: "SECTOR 02 • HIGH ZENITH",
+    x: 39,
+    y: 28,
+    align: "left",
+    accentColor: "#06B6D4",
+    glowColor: "rgba(6, 182, 212, 0.4)",
+  },
+  {
+    id: "academy",
+    projectIndex: 2,
+    landmark: "High Academy Dome",
+    subSector: "SECTOR 03 • SYNTHESIS ACADEMY",
+    x: 62,
+    y: 35,
+    align: "right",
+    accentColor: "#A855F7",
+    glowColor: "rgba(168, 85, 247, 0.4)",
+  },
+  {
+    id: "clockwork",
+    projectIndex: 3,
+    landmark: "Clockwork District",
+    subSector: "SECTOR 04 • ROBOTIC FOUNDRY",
+    x: 82,
+    y: 52,
+    align: "right",
+    accentColor: "#F59E0B",
+    glowColor: "rgba(245, 158, 11, 0.4)",
+  },
+  {
+    id: "viaduct",
+    projectIndex: 4,
+    landmark: "Grand Viaduct & Aqueduct",
+    subSector: "SECTOR 05 • STREAM HIGHWAY",
+    x: 50,
+    y: 74,
+    align: "center",
+    accentColor: "#10B981",
+    glowColor: "rgba(16, 185, 129, 0.4)",
+  },
+];
+
 export default function CinematicStorySection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [manualExpanded, setManualExpanded] = useState(false);
+  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [windowSize, setWindowSize] = useState({ width: 1440, height: 900 });
 
   // Cursor hover parallax state with smooth spring/lerp
@@ -153,16 +255,20 @@ export default function CinematicStorySection() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Escape key to exit manual fullscreen
+  // Escape key to close active hotspot or exit manual fullscreen
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && manualExpanded) {
-        setManualExpanded(false);
+      if (e.key === "Escape") {
+        if (activeHotspot) {
+          setActiveHotspot(null);
+        } else if (manualExpanded) {
+          setManualExpanded(false);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [manualExpanded]);
+  }, [activeHotspot, manualExpanded]);
 
   // Global cursor tracking with smooth lerp loop for floating hover effect
   useEffect(() => {
@@ -566,36 +672,256 @@ export default function CinematicStorySection() {
 
         {/* 
           FINAL IMMERSIVE STATE OVERLAY:
-          Subtle minimal caption when full screen is reached
+          Mounts ONLY after the central image is revealed (finalCueOpacity > 0.05 / effectiveProgress > 0.85).
+          Never intercepts cursor hover or spotlight effects on the 5 editorial cards before revealing.
         */}
-        <div
-          style={{
-            opacity: finalCueOpacity,
-            pointerEvents: finalCueOpacity > 0.5 ? "auto" : "none",
-          }}
-          className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-8 sm:p-12 md:p-16 transition-opacity duration-300"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono tracking-[0.3em] uppercase text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              PHOENIX FOUNDRY // DISCOVERY EXPEDITION
-            </span>
-            <button
-              onClick={() => setManualExpanded(false)}
-              className="text-xs font-mono text-white/80 hover:text-white px-3 py-1 rounded-full bg-black/40 border border-white/20 pointer-events-auto cursor-pointer backdrop-blur-xs"
-            >
-              Contract View [Esc]
-            </button>
-          </div>
+        {finalCueOpacity > 0.05 && (
+          <div
+            style={{
+              opacity: finalCueOpacity,
+            }}
+            className="absolute inset-0 z-30 transition-opacity duration-300 pointer-events-none"
+          >
+            {/* Backdrop click dismisser when a dossier is open */}
+            {activeHotspot && (
+              <div
+                className="fixed inset-0 z-32 pointer-events-auto cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveHotspot(null);
+                }}
+              />
+            )}
 
-          <div className="max-w-xl">
-            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-300/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              THE CELESTIAL WATERFALL CITADEL
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mt-1 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-              Where Intelligent Systems Become Living Worlds.
-            </h2>
+            {/* Top HUD */}
+            <div className="absolute top-6 sm:top-8 inset-x-0 px-6 sm:px-12 flex items-center justify-between pointer-events-auto z-40">
+              <div className="glass-pill flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-xl">
+                <HousePinIcon className="w-4 h-4" color="#F59E0B" />
+                <span className="text-[11px] font-mono tracking-[0.25em] uppercase text-white/90 font-bold">
+                  CITADEL REALM // ARCHITECTURAL PINS
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveHotspot(null);
+                  setManualExpanded(false);
+                }}
+                className="glass-pill text-xs font-mono text-white/80 hover:text-white px-3.5 py-1.5 rounded-full border border-white/20 pointer-events-auto cursor-pointer backdrop-blur-md transition-all hover:border-amber-400/60 shadow-xl"
+              >
+                Contract View [Esc]
+              </button>
+            </div>
+
+            {/* 5 Canonical Architectural House Hotspots across the Citadel */}
+            <div className="absolute inset-0 pointer-events-none z-35">
+              {CITADEL_HOTSPOTS.map((hotspot) => {
+                const project = PHOENIX_PROJECTS[hotspot.projectIndex];
+                const isActive = activeHotspot === hotspot.id;
+
+                return (
+                  <div
+                    key={hotspot.id}
+                    style={{
+                      left: `${hotspot.x}%`,
+                      top: `${hotspot.y}%`,
+                    }}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* House Pin Button */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveHotspot(isActive ? null : hotspot.id)}
+                      className="group relative flex items-center gap-2 cursor-pointer focus:outline-none"
+                      aria-label={`Inspect ${hotspot.landmark} - ${project.title}`}
+                    >
+                      {/* Pulsing Radar Ring */}
+                      <span
+                        className="absolute -inset-2.5 rounded-full opacity-70 animate-ping pointer-events-none"
+                        style={{ backgroundColor: hotspot.glowColor }}
+                      />
+
+                      {/* Architectural House Beacon Icon */}
+                      <div
+                        className={`relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl transition-all duration-300 backdrop-blur-md shadow-xl ${
+                          isActive
+                            ? "scale-115 border-2"
+                            : "scale-100 hover:scale-110 border"
+                        }`}
+                        style={{
+                          backgroundColor: isActive
+                            ? "rgba(14, 11, 18, 0.95)"
+                            : "rgba(10, 8, 14, 0.82)",
+                          borderColor: isActive
+                            ? hotspot.accentColor
+                            : "rgba(255, 255, 255, 0.3)",
+                          boxShadow: isActive
+                            ? `0 0 28px ${hotspot.glowColor}`
+                            : "0 4px 18px rgba(0,0,0,0.7)",
+                        }}
+                      >
+                        <HousePinIcon
+                          className="w-5 h-5 sm:w-5.5 sm:h-5.5 transition-transform duration-300 group-hover:scale-110"
+                          color={hotspot.accentColor}
+                        />
+                      </div>
+
+                      {/* House Landmark Label Pill */}
+                      <div
+                        className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all duration-200 backdrop-blur-md shadow-lg"
+                        style={{
+                          backgroundColor: isActive
+                            ? "rgba(18, 14, 24, 0.94)"
+                            : "rgba(10, 8, 14, 0.82)",
+                          borderColor: isActive
+                            ? hotspot.accentColor
+                            : "rgba(255, 255, 255, 0.2)",
+                        }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full animate-pulse"
+                          style={{ backgroundColor: hotspot.accentColor }}
+                        />
+                        <span className="font-mono text-[11px] font-bold tracking-wider text-white">
+                          0{hotspot.projectIndex + 1}
+                        </span>
+                        <span className="text-[11px] text-zinc-300 font-medium tracking-tight whitespace-nowrap">
+                          {hotspot.landmark.split(" ")[0]}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Floating Architectural Dossier Card */}
+                    {isActive && (
+                      <div
+                        className={`absolute z-50 w-72 sm:w-88 max-w-[calc(100vw-32px)] p-4 rounded-2xl glass-modal border text-left shadow-2xl transition-all duration-300 ${
+                          hotspot.align === "right"
+                            ? "right-0 sm:right-6 top-14 sm:-top-8"
+                            : hotspot.align === "center"
+                            ? "-translate-x-1/2 left-1/2 bottom-14"
+                            : "left-0 sm:left-6 top-14 sm:-top-8"
+                        }`}
+                        style={{
+                          borderColor: hotspot.accentColor,
+                          boxShadow: `0 16px 40px rgba(0, 0, 0, 0.9), 0 0 24px ${hotspot.glowColor}`,
+                        }}
+                      >
+                        {/* Landmark Header & Close Button */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <HousePinIcon className="w-3.5 h-3.5" color={hotspot.accentColor} />
+                            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-400">
+                              0{hotspot.projectIndex + 1} // {hotspot.landmark}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveHotspot(null)}
+                            className="text-zinc-400 hover:text-white text-sm px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer"
+                            aria-label="Close dossier"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        {/* Project Title & Category */}
+                        <div className="mb-2">
+                          <div
+                            className="text-[10px] font-mono tracking-widest uppercase font-bold mb-0.5"
+                            style={{ color: hotspot.accentColor }}
+                          >
+                            {project.category}
+                          </div>
+                          <h4 className="text-base sm:text-lg font-black text-white tracking-tight">
+                            {project.title}
+                          </h4>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-xs text-zinc-200 leading-relaxed mb-3 font-normal">
+                          {project.description}
+                        </p>
+
+                        {/* Tech Specs & CTA Button */}
+                        <div className="pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
+                          <span className="font-mono text-[10px] text-zinc-400 truncate">
+                            {project.specs.slice(0, 2).join(" • ")}
+                          </span>
+                          <a
+                            href={project.destinationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all duration-200 shadow-md whitespace-nowrap cursor-pointer hover:brightness-110"
+                            style={{
+                              backgroundColor: hotspot.accentColor,
+                              color: "#000000",
+                            }}
+                          >
+                            {project.destinationType === "LIVE PLATFORM"
+                              ? "Launch Live ↗"
+                              : "GitHub →"}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom-Left Citadel Caption */}
+            <div className="absolute bottom-24 sm:bottom-12 left-6 sm:left-12 max-w-sm pointer-events-auto z-35 hidden md:block">
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-300/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                THE CELESTIAL WATERFALL CITADEL
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight mt-1 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                Where Intelligent Systems Become Living Worlds.
+              </h2>
+            </div>
+
+            {/* Bottom Architectural House Switcher Dock */}
+            <div className="absolute bottom-6 sm:bottom-8 inset-x-0 z-40 flex justify-center px-4 pointer-events-auto">
+              <div className="glass-dock flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-2xl border border-white/20 backdrop-blur-xl shadow-2xl max-w-full overflow-x-auto">
+                <div className="hidden lg:flex items-center gap-1.5 px-3 text-zinc-400 font-mono text-[10px] tracking-widest uppercase border-r border-white/15 mr-1">
+                  <HousePinIcon className="w-4 h-4" color="#F59E0B" />
+                  <span>Citadel Houses</span>
+                </div>
+                {CITADEL_HOTSPOTS.map((h) => {
+                  const p = PHOENIX_PROJECTS[h.projectIndex];
+                  const isSelected = activeHotspot === h.id;
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => setActiveHotspot(isSelected ? null : h.id)}
+                      className={`glass-tab flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? "bg-white/20 border-white/40 text-white shadow-lg"
+                          : "text-zinc-300 hover:text-white"
+                      }`}
+                      style={{
+                        borderColor: isSelected ? h.accentColor : undefined,
+                        boxShadow: isSelected ? `0 0 16px ${h.glowColor}` : undefined,
+                      }}
+                    >
+                      <HousePinIcon className="w-3.5 h-3.5" color={h.accentColor} />
+                      <span
+                        className="font-mono text-[11px] font-bold"
+                        style={{ color: isSelected ? h.accentColor : undefined }}
+                      >
+                        0{h.projectIndex + 1}
+                      </span>
+                      <span className="text-[11px] font-medium hidden md:inline">
+                        {p.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
